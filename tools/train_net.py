@@ -68,14 +68,13 @@ def combined_roidb(imdb_names):
 
     roidbs = [get_roidb(s) for s in imdb_names.split('+')]
     roidb = roidbs[0]
-    print('mine1', imdb_names)
     if len(roidbs) > 1:
         for r in roidbs[1:]:
             roidb.extend(r)
         imdb = datasets.imdb(imdb_names)
     else:
         imdb = get_imdb(imdb_names)
-    print('mine2', imdb_names)
+
     return imdb, roidb
 
 if __name__ == '__main__':
