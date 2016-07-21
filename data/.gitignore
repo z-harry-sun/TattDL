@@ -1,0 +1,6 @@
+cache
+*.tgz
+pylintrc
+selective_search_data
+tatt*
+VOC*
