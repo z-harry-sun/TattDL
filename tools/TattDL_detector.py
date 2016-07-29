@@ -144,7 +144,7 @@ def parse_args():
                         action='store_true')
     parser.add_argument("-v", "--results", dest="inspect", help="v: visualize; w: write to detection file",
                         default="w", action="store")
-    parser.add_argument('--net', dest='demo_net', help='Network to use [afman]',
+    parser.add_argument('--net', dest='demo_net', help='Network to use [tattc_voc]',
                         choices=NETS.keys(), default='tattc_voc')
 
     args = parser.parse_args()
