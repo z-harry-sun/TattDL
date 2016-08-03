@@ -72,11 +72,14 @@ def tattoo_detection(net, image_name, args):
     im_in = cv2.imread(image_name)
 
     if im_in is None:
-        print('cannot open %s for read' % image_name )
-        exit(-1)
+        raise ValueError('cannot open %s for read' % image_name )
 
     rows,cols = im_in.shape[:2]
     print([rows,cols])
+
+    min_w, min_h = (args.min_width, args.min_height)
+    if rows < min_h or cols < min_w:
+        raise ValueError('Image dimensions too small on one or more axes: (%d, %d)' % (rows, cols))
 
     scale=1.0
     if rows >= cols:
@@ -134,6 +137,8 @@ def parse_args():
                         default=0, type=int)
     parser.add_argument("-i", "--image", dest="fname", help="image name",
                         default="step5.jpg", action="store")
+    parser.add_argument("--list", help="Path to line separate image file paths. If both this and `-i` "
+                                       "are given, this option is used.")
     parser.add_argument("-o", "--output", dest="output", help="output path",
                         default=".", action="store")
     parser.add_argument('-t', '--threshold', dest='threshold', help='detection threshold', default=0.3, type=float)
@@ -146,6 +151,10 @@ def parse_args():
                         default="w", action="store")
     parser.add_argument('--net', dest='demo_net', help='Network to use [tattc_voc]',
                         choices=NETS.keys(), default='tattc_voc')
+    parser.add_argument('--min-width', help='Minimum image width constraint in pixels [64]',
+                        default=64)
+    parser.add_argument('--min-height', help='Minimum image height constraint in pixels [64]',
+                        default=64, type=int)
 
     args = parser.parse_args()
     return args
@@ -185,16 +194,22 @@ if __name__ == '__main__':
     for i in xrange(2):
         _, _= im_detect(net, im)
 
-    if os.path.isdir(args.fname):
+    if args.list and os.path.isfile(args.list):
+        im_names = ( ln.strip() for ln in open(args.list) )
+    elif os.path.isdir(args.fname):
         im_names = sorted(glob.glob( os.path.join( args.fname, '*.jpg')))
     else:
-        im_names = [ os.path.join('/home/sun/z/data/tattc/tatt-c_ongoing/tattoo_detection/images', args.fname) ]
+        raise ValueError("A set of image paths must be given!")
 
     plt.figure(9999,figsize=(12, 12))
     with open(os.path.join( args.output, 'detection.txt'), 'w') as fid:
         for im_name in im_names:
             print('~~~~~~ Detection for {}'.format(im_name))
-            dets, scores, seconds, scale = tattoo_detection(net, im_name, args)
+            try:
+                dets, scores, seconds, scale = tattoo_detection(net, im_name, args)
+            except ValueError, ex:
+                print "! Error processing image: %s" % str(ex)
+                continue
 
             text = '%s|%.3f|%f|' % (os.path.basename(im_name),float(seconds),float(scale))
             for s in scores:

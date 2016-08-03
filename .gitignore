@@ -3,3 +3,4 @@
 .ipynb_checkpoints
 lib/build
 caffe-fast-rcnn
+detection.txt
